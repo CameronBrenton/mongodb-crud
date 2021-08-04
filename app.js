@@ -10,7 +10,13 @@ async function main() {
 	try {
 		await client.connect();
 		console.log('Successfully connected to mongo db!')
-		await listDatabases(client);
+		
+		await createListing(client, {
+			name: "Lovely Loft",
+			summary: "A charming loft in Paris",
+			bedrooms: 1,
+			bathrooms: 1
+		})
 	}catch(err) {
 		console.error(err);
 	} finally {
@@ -21,7 +27,7 @@ async function main() {
 main().catch(console.error);
 
 async function createListing(client, newListing) {
-	const result = client.db("sample_airbnb").collection("listingsAndReviews").insertOne(newListing);
+	const result = await client.db("sample_airbnb").collection("listingsAndReviews").insertOne(newListing);
 
 	console.log(`New listing created with the following id: ${result.insertedId}`);
 }
