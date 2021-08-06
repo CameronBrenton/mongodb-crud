@@ -9,14 +9,31 @@ async function main() {
 
 	try {
 		await client.connect();
-		console.log('Successfully connected to mongo db!')
 		
-		await createListing(client, {
-			name: "Lovely Loft",
-			summary: "A charming loft in Paris",
-			bedrooms: 1,
-			bathrooms: 1
-		})
+		await createMulitipleListings(client, [
+			{
+				name: "Infinite Views",
+				summary: "Modern home with infinite views from the infinity pool",
+				property_type: "House",
+				bedrooms: 5,
+				bathrooms: 4.5,
+				beds: 5
+			},
+			{
+				name: "Private room in Toronto",
+				property_type: "Apartment",
+				bedrooms: 1,
+				bathrooms: 1
+			},
+			{
+				name: "Beautiful Beach House",
+				summary: "Enjoy relaxed beach living in this house with a privat beach",
+				bedrooms: 4,
+				bathrooms: 2.5,
+				beds: 7,
+				last_review: new Date()
+			}
+		]);
 	}catch(err) {
 		console.error(err);
 	} finally {
@@ -25,6 +42,13 @@ async function main() {
 }
 
 main().catch(console.error);
+
+async function createMulitipleListings(client, newListings) {
+	const result = await client.db("sample_airbnb").collection("listingsAndReviews").insertMany(newListings);
+
+	console.log(`${result.insertedCount} new listings created with the following id(s):`);
+	console.log(result.insertedIds);
+}
 
 async function createListing(client, newListing) {
 	const result = await client.db("sample_airbnb").collection("listingsAndReviews").insertOne(newListing);
