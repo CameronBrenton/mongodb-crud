@@ -10,11 +10,7 @@ async function main() {
 	try {
 		await client.connect();
 		
-		await findListingWithMinimumBedroomsBathroomsAndMostRecentReviews(client, {
-			minimumNumberOfBedrooms: 4,
-			minimumNumberOfBathrooms: 2,
-			maximumNumberOfResults: 5
-		});
+		await deleteListingsScrapedBeforeDate(client, new Date("2019-02-15"));
 	}catch(err) {
 		console.error(err);
 	} finally {
@@ -23,6 +19,49 @@ async function main() {
 }
 
 main().catch(console.error);
+
+async function deleteListingsScrapedBeforeDate(client, date) {
+	const result = await client.db("sample_airbnb").collection("listingsAndReviews").deleteMany({ "last_scraped": { $lt: date } });
+
+	console.log(`${result.deletedCount} document(s) was/were deleted`);
+}
+
+async function deleteListingByName(client, nameOfListing) {
+	const result = await client.db("sample_airbnb").collection("listingsAndReviews").deleteOne({ name: nameOfListing });
+
+	console.log(`${result.deletedCount} document(s) was/were deleted`);
+}
+
+async function updateAllListingsToHavePropertyType(client) {
+	const result = await client.db("sample_airbnb").collection("listingsAndReviews").updateMany({ property_type: { $exists: false } },
+		{ $set: { property_type: "Unknown" } });
+
+	console.log(`${result.matchedCount} document(s) matched the query criteria`);
+	console.log(`${result.modifiedCount} document(s) was/were updated`);
+}
+
+async function upsertListingByName(client, nameOfListing, newListing) {
+	const result = await client.db("sample_airbnb").collection("listingsAndReviews").updateOne({
+		name: nameofListing }, { $set: updatedListing }, { upsert: true});
+
+		console.log(`${result.matchedCount} document(s) matched the query criteria`);
+
+		if (result.upsertedCount > 0) {
+			console.log(`One document was inserted with the id ${result.upsertedId}`)
+		} else {
+			console.log(`${result.modifiedCount} document(s) was/were updated`);
+		}
+}
+
+
+async function updateListingByName(client, nameofListing, updatedListing) {
+	const result = await client.db("sample_airbnb").collection("listingsAndReviews").updateOne({
+	name: nameofListing }, { $set: updatedListing });
+
+	console.log(`${result.matchedCount} document(s) matched the query criteria`);
+	console.log(`${result.modifiedCount} document(s) was/were modified`);
+
+}
 
 async function findListingWithMinimumBedroomsBathroomsAndMostRecentReviews(client, {
 	minimumNumberOfBedrooms = 0,
